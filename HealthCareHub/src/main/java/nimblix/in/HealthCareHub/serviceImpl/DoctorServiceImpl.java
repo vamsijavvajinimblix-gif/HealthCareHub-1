@@ -16,6 +16,9 @@ import nimblix.in.HealthCareHub.request.DoctorRegistrationRequest;
 import nimblix.in.HealthCareHub.service.DoctorService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Service
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService {
@@ -44,11 +47,20 @@ public class DoctorServiceImpl implements DoctorService {
         if (request.getIsAvailable() == null)
             throw new RuntimeException("Availability status cannot be null");
 
-
         doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new UserNotFoundException(
                         "Doctor not found with id: " + request.getDoctorId()
                 ));
+        LocalDate slotDate = LocalDate.parse(request.getAvailableDate());
+        if(slotDate.isBefore(LocalDate.now())){
+            throw new RuntimeException("Cannot add slot for past date");
+        }
+        LocalTime start = LocalTime.parse(request.getStartTime());
+        LocalTime end = LocalTime.parse(request.getEndTime());
+
+        if(!start.isBefore(end)){
+            throw new RuntimeException("Start time must be before end time");
+        }
 
         boolean exists = doctorAvailabilityRepository
                 .existsByDoctorIdAndAvailableDateAndStartTime(
@@ -63,7 +75,17 @@ public class DoctorServiceImpl implements DoctorService {
                             request.getAvailableDate() + " at " + request.getStartTime()
             );
         }
+        boolean overlap = doctorAvailabilityRepository
+                .existsOverlappingSlot(
+                        request.getDoctorId(),
+                        request.getAvailableDate(),
+                        request.getStartTime(),
+                        request.getEndTime()
+                );
 
+        if (overlap) {
+            throw new RuntimeException("Time slot overlaps with existing slot");
+        }
         DoctorAvailability slot = DoctorAvailability.builder()
                 .doctorId(request.getDoctorId())
                 .availableDate(request.getAvailableDate())
@@ -85,6 +107,23 @@ public class DoctorServiceImpl implements DoctorService {
                         "Time slot not found with id: " + slotId
                 ));
 
+
+            if (request.getAvailableDate() != null) {
+                LocalDate slotDate = LocalDate.parse(request.getAvailableDate());
+                if (slotDate.isBefore(LocalDate.now())) {
+                    throw new RuntimeException("Cannot update slot to past date");
+                }
+            }
+        if (request.getStartTime() != null && request.getEndTime() != null) {
+
+            LocalTime start = LocalTime.parse(request.getStartTime());
+            LocalTime end = LocalTime.parse(request.getEndTime());
+
+            if (!start.isBefore(end)) {
+                throw new RuntimeException("Start time must be before end time");
+            }
+        }
+
         if (request.getAvailableDate() != null && request.getStartTime() != null) {
 
             boolean exists = doctorAvailabilityRepository
@@ -102,7 +141,23 @@ public class DoctorServiceImpl implements DoctorService {
                 );
             }
         }
+        if (request.getAvailableDate() != null &&
+                request.getStartTime() != null &&
+                request.getEndTime() != null) {
 
+            boolean overlap = doctorAvailabilityRepository
+                    .existsOverlappingSlotForUpdate(
+                            slot.getDoctorId(),
+                            request.getAvailableDate(),
+                            request.getStartTime(),
+                            request.getEndTime(),
+                            slotId
+                    );
+
+            if (overlap) {
+                throw new RuntimeException("Time slot overlaps with existing slot");
+            }
+        }
         if (request.getAvailableDate() != null)
             slot.setAvailableDate(request.getAvailableDate());
 
@@ -112,15 +167,15 @@ public class DoctorServiceImpl implements DoctorService {
         if (request.getEndTime() != null)
             slot.setEndTime(request.getEndTime());
 
-        if (request.getIsAvailable() != null)
-            slot.setIsAvailable(request.getIsAvailable());
-
+        if (request.getIsAvailable() != null) {
+            slot.setAvailable(request.getIsAvailable());
+        }
         return doctorAvailabilityRepository.save(slot);
     }
 
 
     @Override
-    public String registerDoctor(DoctorRegistrationRequest request) {
+    public String RegisterDoctor(DoctorRegistrationRequest request) {
 
         Hospital hospital = hospitalRepository.findByName(request.getHospitalName())
                 .orElseThrow(() -> new RuntimeException("Hospital not found"));

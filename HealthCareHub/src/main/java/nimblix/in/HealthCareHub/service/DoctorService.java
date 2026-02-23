@@ -6,7 +6,7 @@ import nimblix.in.HealthCareHub.request.DoctorRegistrationRequest;
 
 public interface DoctorService {
 
-    String registerDoctor(DoctorRegistrationRequest doctorRegistrationRequest);
+    String RegisterDoctor(DoctorRegistrationRequest doctorRegistrationRequest);
 
     DoctorAvailability addDoctorTimeSlot(DoctorAvailabilityRequest request);
 

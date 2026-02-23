@@ -31,7 +31,7 @@ public class DoctorAvailability {
     @Column(nullable = false)
     private String endTime;
     @Column(nullable = false)
-    private Boolean isAvailable;
+    private boolean isAvailable;
 
     @Column(name = "created_time")
     private String createdTime;

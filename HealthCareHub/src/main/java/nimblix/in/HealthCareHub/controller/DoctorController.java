@@ -28,11 +28,11 @@ public class DoctorController {
     public String registerDoctor(
             @RequestBody DoctorRegistrationRequest doctorRegistrationRequest) {
 
-        return doctorService.registerDoctor(doctorRegistrationRequest);
+        return doctorService.RegisterDoctor(doctorRegistrationRequest);
     }
 
     @PostMapping("/timeslot/add")
-    public ResponseEntity<?> addTimeSlot(
+    public ResponseEntity<DoctorAvailability> addTimeSlot(
             @RequestBody DoctorAvailabilityRequest request) {
 
         DoctorAvailability saved =
@@ -42,7 +42,7 @@ public class DoctorController {
     }
 
     @PutMapping("/timeslot/update/{slotId}")
-    public ResponseEntity<?> updateTimeSlot(
+    public ResponseEntity<DoctorAvailability> updateTimeSlot(
             @PathVariable Long slotId,
             @RequestBody DoctorAvailabilityRequest request) {
 
