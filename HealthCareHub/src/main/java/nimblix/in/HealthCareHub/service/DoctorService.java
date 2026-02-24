@@ -1,9 +1,10 @@
 package nimblix.in.HealthCareHub.service;
 
 import nimblix.in.HealthCareHub.request.DoctorRegistrationRequest;
-import nimblix.in.HealthCareHub.response.DoctorProfileResponseDTO;
+import org.springframework.http.ResponseEntity;
 
 public interface DoctorService {
-    String RegisterDoctor(DoctorRegistrationRequest doctorRegistrationRequest);
-    public DoctorProfileResponseDTO getDoctorProfile(Long doctorId);
+    String registerDoctor(DoctorRegistrationRequest request);
+
+    ResponseEntity<?> getDoctorDetails(Long doctorId, Long hospitalId);
 }

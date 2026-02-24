@@ -17,55 +17,46 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "experience_years")
     private Integer experienceYears;
 
-    @Column(name = "phoneNo")
     private String phone;
 
-    @Column(name = "EmailId")
-    private String EmailId;
+    @Column(unique = true)
+    private String emailId;
 
-    @Column(name = "password")
     private String password;
 
-    @Column(name = "qualification")
     private String qualification;
 
-    // Login User (Doctor Account)
-     @Column(name = "user_id")
-    private Long userId;
+    // ✅ Doctor login account
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    // Many Doctors → One Hospital
+    // ✅ Many Doctors → One Hospital
+    @ManyToOne
+    @JoinColumn(name = "hospital_id", nullable = false)
+    private Hospital hospital;
 
-    @Column(name = "hospital_id")
-    private Long hospitalId;
+    // ✅ Many Doctors → One Specialization
+    @ManyToOne
+    @JoinColumn(name = "specialization_id", nullable = false)
+    private Specialization specialization;
 
-    @Column(name = "specialization_id")
-    private Long specializationId;
-
-    @Column(name = "created_time")
     private String createdTime;
-
-    @Column(name = "updated_time")
     private String updatedTime;
-
 
     @PrePersist
     protected void onCreate(){
-        createdTime= HealthCareUtil.changeCurrentTimeToLocalDateFromGmtToISTInString();
-        updatedTime= HealthCareUtil.changeCurrentTimeToLocalDateFromGmtToISTInString();
-
+        createdTime = HealthCareUtil.changeCurrentTimeToLocalDateFromGmtToISTInString();
+        updatedTime = createdTime;
     }
 
     @PreUpdate
     protected void onUpdate(){
-        this.updatedTime= HealthCareUtil.changeCurrentTimeToLocalDateFromGmtToISTInString();
-
-
+        updatedTime = HealthCareUtil.changeCurrentTimeToLocalDateFromGmtToISTInString();
     }
-
 }
