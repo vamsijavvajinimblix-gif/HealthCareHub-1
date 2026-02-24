@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface PatientRepository extends JpaRepository<Patient,Long> {
     // Get only active patients
-    List<Patient> findByIsDeletedFalse();
+//    List<Patient> findByIsDeletedFalse();
 
 }

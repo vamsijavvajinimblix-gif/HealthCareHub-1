@@ -8,14 +8,14 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class PatientService {
+public class PatientServiceImpl {
     @Autowired
     private PatientRepository repository;
 
-    public List<Patient> getAllPatients() {
-
-        return repository.findByIsDeletedFalse();
-    }
+//    public List<Patient> getAllPatients() {
+//
+//        return repository.findByIsDeletedFalse();
+//    }
 
     public String softDeletePatient(Long id) {
         Patient patient = repository.findById(id)
