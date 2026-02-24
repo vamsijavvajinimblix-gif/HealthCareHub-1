@@ -4,7 +4,12 @@ import lombok.RequiredArgsConstructor;
 import nimblix.in.HealthCareHub.model.DoctorAvailability;
 import nimblix.in.HealthCareHub.request.DoctorAvailabilityRequest;
 import nimblix.in.HealthCareHub.request.DoctorRegistrationRequest;
+import nimblix.in.HealthCareHub.response.DoctorAvailabilityResponse;
 import nimblix.in.HealthCareHub.service.DoctorService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,40 +20,37 @@ public class DoctorController {
 
     private final DoctorService doctorService;
 
-    /*
-    Json object:
-    {
-      "name": "tejaswini",
-      "mobileNumber": "8937483454",
-      "date": "10-05-2026"
-    }
-    */
-
     @PostMapping("/register")
-    public String registerDoctor(
-            @RequestBody DoctorRegistrationRequest doctorRegistrationRequest) {
+    public String registerDoctor(@RequestBody DoctorRegistrationRequest request) {
+        return doctorService.registerDoctor(request);
 
-        return doctorService.RegisterDoctor(doctorRegistrationRequest);
     }
 
-    @PostMapping("/timeslot/add")
-    public ResponseEntity<DoctorAvailability> addTimeSlot(
+    @GetMapping("/getDoctorDetails")
+    public ResponseEntity<?> getDoctorDetails(@RequestParam Long  doctorId,@RequestParam Long  hospitalId){
+        return  doctorService.getDoctorDetails(doctorId,hospitalId);
+    }
+
+    @PostMapping("/{doctorId}/timeslots")
+    public ResponseEntity<DoctorAvailabilityResponse> addTimeSlot(
+            @PathVariable Long doctorId,
             @RequestBody DoctorAvailabilityRequest request) {
 
-        DoctorAvailability saved =
-                doctorService.addDoctorTimeSlot(request);
+        DoctorAvailabilityResponse response =
+                doctorService.addDoctorTimeSlot(doctorId, request);
 
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/timeslot/update/{slotId}")
-    public ResponseEntity<DoctorAvailability> updateTimeSlot(
+    @PutMapping("/{doctorId}/timeslots/{slotId}")
+    public ResponseEntity<DoctorAvailabilityResponse> updateTimeSlot(
+            @PathVariable Long doctorId,
             @PathVariable Long slotId,
             @RequestBody DoctorAvailabilityRequest request) {
 
-        DoctorAvailability updated =
-                doctorService.updateDoctorTimeSlot(slotId, request);
+        DoctorAvailabilityResponse response =
+                doctorService.updateDoctorTimeSlot(doctorId, slotId, request);
 
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(response);
     }
 }
