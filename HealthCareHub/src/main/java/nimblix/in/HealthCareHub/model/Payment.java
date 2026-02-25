@@ -4,47 +4,28 @@ import jakarta.persistence.*;
 import lombok.*;
 import nimblix.in.HealthCareHub.utility.HealthCareUtil;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "doctors")
+@Table(name = "payments")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Doctor {
+public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    private Double amount;
+    private String paymentStatus;
+    private LocalDateTime paymentDate;
 
-    private Integer experienceYears;
-
-    private String phone;
-
-    @Column(unique = true)
-    private String emailId;
-
-    private String password;
-
-    private String qualification;
-
-    // ✅ Doctor login account
     @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    // ✅ Many Doctors → One Hospital
-    @ManyToOne
-    @JoinColumn(name = "hospital_id", nullable = false)
-    private Hospital hospital;
-
-    // ✅ Many Doctors → One Specialization
-    @ManyToOne
-    @JoinColumn(name = "specialization_id", nullable = false)
-    private Specialization specialization;
+    @JoinColumn(name = "appointment_id")
+    private Appointment appointment;
 
     private String createdTime;
     private String updatedTime;

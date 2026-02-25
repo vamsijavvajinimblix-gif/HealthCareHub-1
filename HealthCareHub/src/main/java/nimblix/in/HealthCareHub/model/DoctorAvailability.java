@@ -3,48 +3,27 @@ package nimblix.in.HealthCareHub.model;
 import jakarta.persistence.*;
 import lombok.*;
 import nimblix.in.HealthCareHub.utility.HealthCareUtil;
-
 @Entity
-@Table(name = "doctors")
+@Table(name = "doctor_availability")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Doctor {
+public class DoctorAvailability {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
-
-    private Integer experienceYears;
-
-    private String phone;
-
-    @Column(unique = true)
-    private String emailId;
-
-    private String password;
-
-    private String qualification;
-
-    // ✅ Doctor login account
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    // ✅ Many Doctors → One Hospital
     @ManyToOne
-    @JoinColumn(name = "hospital_id", nullable = false)
-    private Hospital hospital;
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
 
-    // ✅ Many Doctors → One Specialization
-    @ManyToOne
-    @JoinColumn(name = "specialization_id", nullable = false)
-    private Specialization specialization;
+    private String availableDate;
+    private String startTime;
+    private String endTime;
+    private boolean isAvailable;
 
     private String createdTime;
     private String updatedTime;

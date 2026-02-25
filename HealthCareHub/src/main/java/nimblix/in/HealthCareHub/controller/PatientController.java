@@ -1,5 +1,6 @@
 package nimblix.in.HealthCareHub.controller;
 
+
 import nimblix.in.HealthCareHub.model.*;
 import nimblix.in.HealthCareHub.service.InsuranceService;
 import org.springframework.http.ResponseEntity;
@@ -75,3 +76,14 @@ public class PatientController {
         );
     }
 }
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("api/patient")
+@RequiredArgsConstructor
+public class PatientController {
+}
+
