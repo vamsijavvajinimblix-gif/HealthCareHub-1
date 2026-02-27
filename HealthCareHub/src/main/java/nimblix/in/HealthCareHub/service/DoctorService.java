@@ -9,10 +9,9 @@ import org.springframework.http.ResponseEntity;
 public interface DoctorService {
 
 
-    DoctorAvailabilityResponse addDoctorTimeSlot(Long doctorId, DoctorAvailabilityRequest request);
+    DoctorAvailabilityResponse addDoctorTimeSlot(DoctorAvailabilityRequest request);
 
-    DoctorAvailabilityResponse updateDoctorTimeSlot(Long doctorId, Long slotId,
-                                            DoctorAvailabilityRequest request);
+    DoctorAvailabilityResponse updateDoctorTimeSlot(DoctorAvailabilityRequest request);
 
     String registerDoctor(DoctorRegistrationRequest request);
 

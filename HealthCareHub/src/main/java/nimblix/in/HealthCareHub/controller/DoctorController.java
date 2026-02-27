@@ -48,8 +48,9 @@ public class DoctorController {
             @PathVariable Long doctorId,
             @RequestBody DoctorAvailabilityRequest request) {
 
+        request.setDoctorId(doctorId);
         DoctorAvailabilityResponse response =
-                doctorService.addDoctorTimeSlot(doctorId, request);
+                doctorService.addDoctorTimeSlot( request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -59,8 +60,10 @@ public class DoctorController {
             @PathVariable Long doctorId,
             @PathVariable Long slotId,
             @RequestBody DoctorAvailabilityRequest request) {
+        request.setDoctorId(doctorId);
+        request.setSlotId(slotId);
         DoctorAvailabilityResponse response =
-                doctorService.updateDoctorTimeSlot(doctorId, slotId, request);
+                doctorService.updateDoctorTimeSlot(request);
 
         return ResponseEntity.ok(response);
     }

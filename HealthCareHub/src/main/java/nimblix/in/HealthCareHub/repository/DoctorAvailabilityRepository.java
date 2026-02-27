@@ -70,5 +70,5 @@ AND (
        FROM DoctorAvailability d
        WHERE d.id = :slotId
        """)
-    DoctorAvailabilityResponse getSlotResponseById(Long slotId);
+    DoctorAvailabilityResponse getSlotResponseById(@Param("slotId") Long slotId);
 }

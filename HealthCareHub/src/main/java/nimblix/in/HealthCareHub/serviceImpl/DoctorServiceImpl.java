@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -34,47 +33,81 @@ public class DoctorServiceImpl implements DoctorService {
     private final SpecializationRepository specializationRepository;
     private final DoctorAvailabilityRepository doctorAvailabilityRepository;
 
-    // Validate slot date/time and prevent past date entries
-    private static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    private static final DateTimeFormatter TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("HH:mm");
-
     private static final ZoneId IST_ZONE = ZoneId.of("Asia/Kolkata");
+    private String getTodayDateIST() {
+        return java.time.LocalDate.now(IST_ZONE).toString(); // yyyy-MM-dd
+    }
+
+    private String getCurrentTimeIST() {
+        return java.time.LocalTime.now(IST_ZONE)
+                .withSecond(0)
+                .withNano(0)
+                .toString()
+                .substring(0, 5); // HH:mm
+    }
+    private void validateDateFormat(String date) {
+        try {
+            LocalDate.parse(date);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid date format. Use yyyy-MM-dd");
+        }
+    }
+
+    private void validateTimeFormat(String time) {
+        try {
+            LocalTime.parse(time);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid time format. Use HH:mm");
+        }
+    }
 
     @Override
-    public DoctorAvailabilityResponse addDoctorTimeSlot(Long doctorId, DoctorAvailabilityRequest request) {
+    public DoctorAvailabilityResponse addDoctorTimeSlot(DoctorAvailabilityRequest request) {
 
-
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+        Long doctorId = request.getDoctorId();
+        if (doctorId == null || doctorId <= 0) {
+            throw new IllegalArgumentException("Invalid doctor id");
+        }
         if (request.getAvailableDate() == null || request.getAvailableDate().trim().isEmpty())
-            throw new RuntimeException("Available date cannot be null or empty");
+            throw new IllegalArgumentException("Available date cannot be null or empty");
 
         if (request.getStartTime() == null || request.getStartTime().trim().isEmpty())
-            throw new RuntimeException("Start time cannot be null or empty");
+            throw new IllegalArgumentException("Start time cannot be null or empty");
 
         if (request.getEndTime() == null || request.getEndTime().trim().isEmpty())
-            throw new RuntimeException("End time cannot be null or empty");
+            throw new IllegalArgumentException("End time cannot be null or empty");
 
         if (request.getIsAvailable() == null)
-            throw new RuntimeException("Availability status cannot be null");
+            throw new IllegalArgumentException("Availability status cannot be null");
+
+        validateDateFormat(request.getAvailableDate());
+        validateTimeFormat(request.getStartTime());
+        validateTimeFormat(request.getEndTime());
 
        Doctor doctor= doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new UserNotFoundException(
                         "Doctor not found with id: " + doctorId));
 
-        LocalDate slotDate = LocalDate.parse(
-                request.getAvailableDate(), DATE_FORMATTER);
+        String today = getTodayDateIST();
+        String currentTime = getCurrentTimeIST();
 
-        LocalDate todayIST = LocalDate.now(IST_ZONE);
-        if(slotDate.isBefore(todayIST)){
-            throw new RuntimeException("Cannot add slot for past date");
+        String slotDate = request.getAvailableDate();
+        String start = request.getStartTime();
+        String end = request.getEndTime();
+
+        if (slotDate.compareTo(today) < 0) {
+            throw new IllegalStateException("Cannot add slot for past date");
         }
-        LocalTime start = LocalTime.parse(request.getStartTime(), TIME_FORMATTER);
-        LocalTime end = LocalTime.parse(request.getEndTime(), TIME_FORMATTER);
 
-        if(!start.isBefore(end)){
-            throw new RuntimeException("Start time must be before end time");
+        if (slotDate.equals(today) && start.compareTo(currentTime) <= 0) {
+            throw new IllegalStateException("Cannot add slot for past time");
+        }
+
+        if (start.compareTo(end) >= 0) {
+            throw new IllegalStateException("Start time must be before end time");
         }
 //duplicate check
         boolean exists = doctorAvailabilityRepository
@@ -85,7 +118,7 @@ public class DoctorServiceImpl implements DoctorService {
                 );
 
         if (exists) {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "Time slot already exists for doctor on " +
                             request.getAvailableDate() + " at " + request.getStartTime()
             );
@@ -99,7 +132,7 @@ public class DoctorServiceImpl implements DoctorService {
                 );
 
         if (overlap) {
-            throw new RuntimeException("Time slot overlaps with existing slot");
+            throw new IllegalStateException("Time slot overlaps with existing slot");
         }
         DoctorAvailability slot = DoctorAvailability.builder()
                 .doctor(doctor)
@@ -114,15 +147,26 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public DoctorAvailabilityResponse updateDoctorTimeSlot(Long doctorId, Long slotId,
-                                                   DoctorAvailabilityRequest request) {
+    public DoctorAvailabilityResponse updateDoctorTimeSlot(DoctorAvailabilityRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
 
+        Long doctorId = request.getDoctorId();
+        Long slotId = request.getSlotId();
+
+        if (doctorId == null || doctorId <= 0) {
+            throw new IllegalArgumentException("Invalid doctor id");
+        }
+        if (slotId == null || slotId <= 0) {
+            throw new IllegalArgumentException("Invalid slot id");
+        }
         DoctorAvailability slot = doctorAvailabilityRepository.findById(slotId)
                 .orElseThrow(() -> new SlotNotFoundException(
                         "Time slot not found with id: " + slotId
                 ));
         if(!slot.getDoctor().getId().equals(doctorId)){
-            throw new RuntimeException("slot does not belong to this doctor");
+            throw new SlotNotFoundException("Time slot not found for this doctor");
         }
 
         // Determine final values (existing or updated)
@@ -145,19 +189,25 @@ public class DoctorServiceImpl implements DoctorService {
                 finalStart.equals(slot.getStartTime()) &&
                 finalEnd.equals(slot.getEndTime()) &&
                 ( finalAvailability == slot.isAvailable())) {
-            throw new RuntimeException("No changes detected for update");
+            throw new IllegalStateException("No changes detected for update");
         }
-        LocalDate parsedDate = LocalDate.parse(finalDate, DATE_FORMATTER);
-        LocalDate todayIST = LocalDate.now(IST_ZONE);
-        if (parsedDate.isBefore(todayIST)) {
-            throw new RuntimeException("Cannot update slot to past date");
+        validateDateFormat(finalDate);
+        validateTimeFormat(finalStart);
+        validateTimeFormat(finalEnd);
+
+        String today = getTodayDateIST();
+        String currentTime = getCurrentTimeIST();
+
+        if (finalDate.compareTo(today) < 0) {
+            throw new IllegalStateException("Cannot update slot to past date");
         }
 
-        LocalTime start = LocalTime.parse(finalStart, TIME_FORMATTER);
-        LocalTime end = LocalTime.parse(finalEnd, TIME_FORMATTER);
+        if (finalDate.equals(today) && finalStart.compareTo(currentTime) <= 0) {
+            throw new IllegalStateException("Cannot update slot to past time");
+        }
 
-        if (!start.isBefore(end)) {
-            throw new RuntimeException("Start time must be before end time");
+        if (finalStart.compareTo(finalEnd) >= 0) {
+            throw new IllegalStateException("Start time must be before end time");
         }
 //  Duplicate check using final values
         boolean exists = doctorAvailabilityRepository
@@ -169,7 +219,7 @@ public class DoctorServiceImpl implements DoctorService {
                 );
 
         if (exists) {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "Time slot already exists for doctor on " +
                             finalDate + " at " + finalStart
             );
@@ -184,7 +234,7 @@ public class DoctorServiceImpl implements DoctorService {
                         slotId
                 );
         if (overlap) {
-            throw new RuntimeException("Time slot overlaps with existing slot");
+            throw new IllegalStateException("Time slot overlaps with existing slot");
         }
 
         slot.setAvailableDate(finalDate);
