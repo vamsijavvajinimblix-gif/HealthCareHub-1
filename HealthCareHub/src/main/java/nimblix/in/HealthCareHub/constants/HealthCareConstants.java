@@ -38,4 +38,10 @@ public class HealthCareConstants {
     public static final String PRESENT = "PRESENT";
     public static final String ABSENT = "ABSENT";
     public static final String TARDY = "TARDY";
+    public static final String DOCTOR_REGISTERED_SUCCESS = "Doctor Registered Successfully";
+    public static final String DOCTOR_ALREADY_EXISTS = "Doctor already exists with this email";
+    public static final String HOSPITAL_NOT_FOUND = "Hospital not found";
+    public static final String SPECIALIZATION_NOT_FOUND = "Specialization not found";
+    public static final String DOCTOR_NOT_BELONG_TO_HOSPITAL = "Doctor not belong to hospital";
+    public static final String DOCTOR_NOT_FOUND = "Doctor not found";
 }
