@@ -17,4 +17,6 @@ public class DoctorRegistrationRequest {
     private Long doctorId;
     private Long hospitalId;
     private String specializationName;
+    private Double consultationFee;
+
 }

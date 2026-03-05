@@ -3,13 +3,15 @@ package nimblix.in.HealthCareHub.controller;
 import lombok.RequiredArgsConstructor;
 import nimblix.in.HealthCareHub.model.Specialization;
 import nimblix.in.HealthCareHub.request.DoctorRegistrationRequest;
-import nimblix.in.HealthCareHub.response.DoctorProfileResponse;
+import nimblix.in.HealthCareHub.response.DoctorRegistrationResponse;
 import nimblix.in.HealthCareHub.service.DoctorService;
 import nimblix.in.HealthCareHub.serviceImpl.DoctorServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.security.PublicKey;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/doctors")
@@ -20,52 +22,21 @@ public class DoctorController {
     private final DoctorService doctorService;
 
 
-    private final DoctorServiceImpl doctorServiceImpl;
-
-
     @PostMapping("/register")
-    public String registerDoctor(@RequestBody DoctorRegistrationRequest request) {
-        return doctorService.registerDoctor(request);
-    }
+    public ResponseEntity<?> registerDoctor(@RequestBody DoctorRegistrationRequest request) {
 
-    @GetMapping("/getDoctorDetails/{doctorId}/{hospitalId}")
-    public ResponseEntity<?> getDoctorDetails(@PathVariable Long doctorId,
-                                              @PathVariable Long hospitalId) {
-        return doctorService.getDoctorDetails(doctorId, hospitalId);
-    }
+        if (request == null ||
+                request.getDoctorName() == null ||
+                request.getDoctorEmail() == null ||
+                request.getHospitalId() == null ||
+                request.getConsultationFee() == null) {
 
-    @PutMapping("/updateDoctorDetails")
-    public String updateDoctorDetails(@RequestBody DoctorRegistrationRequest request){
-        return doctorService.updateDoctorDetails(request);
-    }
+            return ResponseEntity.badRequest().body("Required fields are missing");
+        }
 
-    @DeleteMapping("/deleteDoctorDetails")
-    public String deleteDoctorDetails(@RequestParam Long doctorId){
-        return doctorService.deleteDoctorDetails(doctorId);
+        return ResponseEntity.ok(doctorService.registerDoctor(request)
+        );
+    }
     }
 
 
-
-    @PostMapping("/specialization/create")
-    public Specialization createSpecialization(
-            @RequestBody Specialization specialization) {
-        return doctorServiceImpl.createSpecialization(specialization);
-    }
-
-    @GetMapping("/specializations")
-    public List<Specialization> getAllSpecializations() {
-        return doctorServiceImpl.getAllSpecializations();
-    }
-
-    @PutMapping("/specialization/update/{id}")
-    public Specialization updateSpecialization(
-            @PathVariable Long id,
-            @RequestBody Specialization specialization) {
-        return doctorServiceImpl.updateSpecialization(id, specialization);
-    }
-
-    @DeleteMapping("/specialization/delete/{id}")
-    public String deleteSpecialization(@PathVariable Long id) {
-        return doctorServiceImpl.deleteSpecialization(id);
-    }
-}

@@ -34,16 +34,16 @@ public class DoctorServiceImpl implements DoctorService {
         try {
             // Check if email already exists
             if (doctorRepository.findByEmailId(request.getDoctorEmail()).isPresent()) {
-                return "Doctor already exists with this email";
+                return HealthCareConstants.DOCTOR_ALREADY_EXISTS;
             }
 
             // Fetch Hospital
             Hospital hospital = hospitalRepository.findById(request.getHospitalId())
-                    .orElseThrow(() -> new RuntimeException("Hospital not found"));
+                    .orElseThrow(() -> new RuntimeException(HealthCareConstants.HOSPITAL_NOT_FOUND));
 
             // Fetch Specialization
             Specialization specialization = specializationRepository.findByName(request.getSpecializationName())
-                    .orElseThrow(() -> new RuntimeException("Specialization not found"));
+                    .orElseThrow(() -> new RuntimeException(HealthCareConstants.SPECIALIZATION_NOT_FOUND));
 
             // Create Doctor
             Doctor doctor = new Doctor();
@@ -63,9 +63,9 @@ public class DoctorServiceImpl implements DoctorService {
 
             doctorRepository.save(doctor);
 
-            return "Doctor Registered Successfully";
-        } catch (UserNotFoundException e) {
-            return "User not found";
+            return HealthCareConstants.DOCTOR_REGISTERED_SUCCESS;
+        }catch (UserNotFoundException e){
+            return  HealthCareConstants.USER_NOT_FOUND;
         }
     }
 
@@ -172,14 +172,4 @@ public class DoctorServiceImpl implements DoctorService {
         return specializationRepository.save(existing);
     }
 
-    public String deleteSpecialization(Long id) {
-
-        Specialization specialization = specializationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Specialization not found"));
-
-        specializationRepository.delete(specialization);
-
-        return "Specialization deleted successfully";
-    }
 }
-
