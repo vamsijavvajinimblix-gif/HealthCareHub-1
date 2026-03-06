@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/HealthCareHub/SchoolPEPProject.iml" filepath="$PROJECT_DIR$/HealthCareHub/SchoolPEPProject.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/SpringFeb.iml" filepath="$PROJECT_DIR$/.idea/SpringFeb.iml" />
     </modules>
   </component>
